@@ -1,0 +1,55 @@
+[project]
+name = "kalshi-cli"
+version = "1.0.0"
+description = "A command-line interface for the Kalshi prediction market API"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "austron24"}
+]
+keywords = ["kalshi", "prediction-markets", "trading", "cli", "api"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Financial and Insurance Industry",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Office/Business :: Financial :: Investment",
+]
+dependencies = [
+    "typer[all]>=0.9.0",
+    "rich>=13.0.0",
+    "pyyaml>=6.0",
+    "requests>=2.28.0",
+    "python-dotenv>=1.0.0",
+    "cryptography>=41.0.0",
+    "pypdf>=4.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/austron24/kalshi-cli"
+Repository = "https://github.com/austron24/kalshi-cli"
+Issues = "https://github.com/austron24/kalshi-cli/issues"
+
+[project.scripts]
+kalshi = "kalshi_cli.cli:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/kalshi_cli"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/README.md",
+    "/LICENSE",
+]
