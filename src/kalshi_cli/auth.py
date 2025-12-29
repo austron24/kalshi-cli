@@ -7,9 +7,15 @@ from pathlib import Path
 from dataclasses import dataclass
 from typing import Optional, Protocol, TYPE_CHECKING
 
+from dotenv import load_dotenv
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.backends import default_backend
+
+# Auto-load credentials from ~/.kalshi/.env if it exists
+_kalshi_env = Path.home() / ".kalshi" / ".env"
+if _kalshi_env.exists():
+    load_dotenv(_kalshi_env)
 
 if TYPE_CHECKING:
     from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey

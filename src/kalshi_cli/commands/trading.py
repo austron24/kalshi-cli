@@ -1,5 +1,6 @@
 """Trading-related CLI commands."""
 
+import sys
 import typer
 import json
 import fnmatch
@@ -22,6 +23,7 @@ def order_cmd(
     count: int = typer.Option(..., "--count", "-c", help="Number of contracts"),
     order_type: str = typer.Option("market", "--type", help="limit or market"),
     price: Optional[int] = typer.Option(None, "--price", "-p", help="Price in cents (required for limit orders)"),
+    force: bool = typer.Option(False, "--force", "-f", help="Skip confirmation prompt"),
 ):
     """Create an order.
 
@@ -126,10 +128,16 @@ def order_cmd(
                 console.print(f"  Est. Fill: ~{relevant_bid}c (${(relevant_bid * count) / 100:.2f} total)")
     console.print()
 
-    confirm = typer.confirm("Execute this order?")
-    if not confirm:
-        console.print("[yellow]Order cancelled[/yellow]")
-        raise typer.Exit(0)
+    if not force:
+        # Detect non-interactive environment and provide helpful error
+        if not sys.stdin.isatty():
+            console.print("[red]Error: Cannot prompt for confirmation in non-interactive mode.[/red]")
+            console.print("[yellow]Use --force / -f to skip confirmation.[/yellow]")
+            raise typer.Exit(1)
+        confirm = typer.confirm("Execute this order?")
+        if not confirm:
+            console.print("[yellow]Order cancelled[/yellow]")
+            raise typer.Exit(0)
 
     # Submit order
     try:
@@ -197,6 +205,10 @@ def cancel(
         raise typer.Exit(0)
 
     if not force:
+        if not sys.stdin.isatty():
+            console.print("[red]Error: Cannot prompt for confirmation in non-interactive mode.[/red]")
+            console.print("[yellow]Use --force / -f to skip confirmation.[/yellow]")
+            raise typer.Exit(1)
         confirm = typer.confirm("Cancel this order?")
         if not confirm:
             console.print("[yellow]Cancelled[/yellow]")
@@ -215,6 +227,7 @@ def buy(
     count: int = typer.Argument(..., help="Number of contracts"),
     ticker: str = typer.Argument(..., help="Market ticker"),
     price: Optional[int] = typer.Option(None, "--price", "-p", help="Limit price in cents"),
+    force: bool = typer.Option(False, "--force", "-f", help="Skip confirmation prompt"),
 ):
     """Quick buy command.
 
@@ -223,9 +236,10 @@ def buy(
     Examples:
         kalshi buy yes 10 INXD-25JAN01-T8500
         kalshi buy no 5 INXD-25JAN01-T8500 --price 30
+        kalshi buy yes 10 INXD-25JAN01-T8500 --force  # Skip confirmation
     """
     order_type = "limit" if price else "market"
-    order_cmd(ticker=ticker, side=side, action="buy", count=count, order_type=order_type, price=price)
+    order_cmd(ticker=ticker, side=side, action="buy", count=count, order_type=order_type, price=price, force=force)
 
 
 def sell(
@@ -233,6 +247,7 @@ def sell(
     count: int = typer.Argument(..., help="Number of contracts"),
     ticker: str = typer.Argument(..., help="Market ticker"),
     price: Optional[int] = typer.Option(None, "--price", "-p", help="Limit price in cents"),
+    force: bool = typer.Option(False, "--force", "-f", help="Skip confirmation prompt"),
 ):
     """Quick sell command.
 
@@ -241,9 +256,10 @@ def sell(
     Examples:
         kalshi sell yes 10 INXD-25JAN01-T8500
         kalshi sell no 5 INXD-25JAN01-T8500 --price 70
+        kalshi sell yes 10 INXD-25JAN01-T8500 --force  # Skip confirmation
     """
     order_type = "limit" if price else "market"
-    order_cmd(ticker=ticker, side=side, action="sell", count=count, order_type=order_type, price=price)
+    order_cmd(ticker=ticker, side=side, action="sell", count=count, order_type=order_type, price=price, force=force)
 
 
 def close_position(
@@ -326,6 +342,10 @@ def close_position(
     console.print()
 
     if not force:
+        if not sys.stdin.isatty():
+            console.print("[red]Error: Cannot prompt for confirmation in non-interactive mode.[/red]")
+            console.print("[yellow]Use --force / -f to skip confirmation.[/yellow]")
+            raise typer.Exit(1)
         confirm = typer.confirm("Execute this close?")
         if not confirm:
             console.print("[yellow]Cancelled[/yellow]")
@@ -419,6 +439,10 @@ def cancel_all(
         return
 
     if not force:
+        if not sys.stdin.isatty():
+            console.print("[red]Error: Cannot prompt for confirmation in non-interactive mode.[/red]")
+            console.print("[yellow]Use --force / -f to skip confirmation.[/yellow]")
+            raise typer.Exit(1)
         confirm = typer.confirm(f"Cancel {len(orders)} orders?")
         if not confirm:
             console.print("[yellow]Cancelled[/yellow]")
